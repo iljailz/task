@@ -86,6 +86,6 @@
     when:
     - ansible_facts['distribution'] == "Ubuntu"
     service: 
-      name: mariadb-server
+      name: mariadb
       state: restarted
       enabled: true
