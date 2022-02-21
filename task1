@@ -1,0 +1,91 @@
+---
+- name: task
+  hosts: all
+  user: ec2-user
+  become: yes 
+  become_method: sudo 
+  tasks:
+  - name: add list of users
+    when: 
+    - ansible_facts['distribution'] == "Amazon"
+    ansible.builtin.user:
+      name: "{{ item }}"
+      state: present
+      generate_ssh_key: yes
+    with_items:
+    - bob
+    - ben
+    - lisa
+    - katty
+  - name: to lisa 
+    when: 
+    - ansible_facts['distribution'] == "Amazon"
+    get_url:
+      url: https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv
+      dest: /home/lisa/
+      mode: '0440'
+  - name: to ben 
+    when: 
+    - ansible_facts['distribution'] == "Amazon"
+    get_url:
+      url: https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv
+      dest: /home/ben/
+      mode: '0440'
+  - name: to bob 
+    when: 
+    - ansible_facts['distribution'] == "Amazon"
+    get_url:
+      url: https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv
+      dest: /home/bob/
+      mode: '0440'
+  - name: to Katty
+    when: 
+    - ansible_facts['distribution'] == "Amazon"
+    get_url:
+      url: https://people.sc.fsu.edu/~jburkardt/data/csv/addresses.csv
+      dest: /home/katty/
+      mode: '0440'
+    notify:  
+  - name: Install
+    when: 
+    - ansible_facts['distribution'] == "Ubuntu"
+    apt: 
+      name: "{{ item }}" 
+      state: latest
+      update_cache: yes
+    with_items:
+    - software-properties-common 
+    - gnupg-curl 
+    - apt-transport-https
+
+  - name: Install 2
+    when: 
+    - ansible_facts['distribution'] == "Ubuntu"
+    ansible.builtin.apt_key:
+      url: https://mariadb.org/mariadb_release_signing_key.asc
+      state: present
+
+
+  - name: Install 3
+    when: 
+    - ansible_facts['distribution'] == "Ubuntu"
+    ansible.builtin.apt_repository:
+      repo: deb [arch=amd64,arm64,i386,ppc64el] https://mirror.its.dal.ca/mariadb/repo/10.5/ubuntu xenial main
+      state: present
+  - name: Install 4
+    when: 
+    - ansible_facts['distribution'] == "Ubuntu"
+    apt: 
+      name: mariadb-server
+      state: present
+    notify: Restart MariaDB
+
+
+  handlers:
+  - name: Restart MariaDB
+    when:
+    - ansible_facts['distribution'] == "Ubuntu"
+    service: 
+      name: mariadb-server
+      state: restarted
+      enabled: true
